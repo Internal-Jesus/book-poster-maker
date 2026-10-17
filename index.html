@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Poster Maker - Final All in One</title>
+<style>
+*{box-sizing:border-box;font-family:Arial,sans-serif;margin:0;padding:0}
+body{background:#0f0f1a}
+.app{max-width:500px;margin:auto;background:#fff7e6;min-height:100vh;overflow-y:auto;padding:15px 15px 60px}
+h1{text-align:center;background:linear-gradient(90deg,#7c5cff,#ec4899);color:#fff;padding:18px;border-radius:22px;font-size:22px;line-height:1.3}
+.badge{display:inline-block;background:#22c55e;color:#fff;font-size:12px;padding:5px 12px;border-radius:20px;margin-top:6px}
+.box{background:#fff;padding:15px;border-radius:18px;margin-top:15px;box-shadow:0 4px 12px #0002}
+label{font-weight:bold;font-size:16px;display:block}
+textarea{width:100%;height:160px;padding:12px;border-radius:12px;border:2px solid #ddd;margin-top:8px;font-size:15px;resize:vertical}
+input,select{width:100%;padding:12px;border-radius:12px;border:2px solid #ddd;margin-top:8px;font-size:15px}
+.small{font-size:12px;color:#666;margin-top:5px}
+.up{border:2px dashed #a855f7;background:#faf5ff;padding:16px;text-align:center;border-radius:14px;margin-top:10px;cursor:pointer}
+.up img{max-width:100%;border-radius:10px;margin-top:10px;max-height:220px}
+.styles{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.styles button{flex:1;padding:10px;border:none;border-radius:20px;background:#eee;cursor:pointer;font-size:13px}
+.styles button.active{background:#7c5cff;color:#fff}
+.gen{width:100%;padding:16px;background:#ec4899;color:#fff;border:none;border-radius:15px;font-size:18px;font-weight:bold;margin-top:12px;cursor:pointer}
+.dl{width:100%;padding:13px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:bold;margin-top:10px;cursor:pointer}
+.again{width:100%;padding:13px;background:#22c55e;color:#fff;border:none;border-radius:12px;font-weight:bold;margin-top:8px;cursor:pointer}
+#loading{display:none;text-align:center;padding:18px;color:#7c5cff;font-weight:bold;font-size:16px}
+#result{display:none}
+#posterImg{width:100%;border-radius:16px;margin-top:10px;box-shadow:0 8px 20px #0003}
+#history{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+#history img{width:31%;border-radius:10px;cursor:pointer}
+.tag{display:inline-block;background:#facc15;padding:6px 12px;border-radius:20px;font-weight:bold;font-size:13px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<h1>📚 Book Poster Maker<br><span class="badge">● CONNECTED TO POLLINATIONS.AI FREE</span></h1>
+
+<!-- 1. PASTE STORY -->
+<div class="box">
+<label>1. Paste Your Whole Story Here</label>
+<textarea id="story" placeholder="Paste your full story... Once upon a time there was a brave dragon Ember who found a secret library..."></textarea>
+<p class="small" id="count">0 characters</p>
+<label>Book Title (Auto from story)</label>
+<input id="title" placeholder="Eg: Ember & The Star Library">
+<label>Author Name</label>
+<input id="author" placeholder="Eg: By Your Name">
+</div>
+
+<!-- 2. UPLOAD FILES -->
+<div class="box">
+<label>2. Upload Images / Files</label>
+<div class="up" onclick="document.getElementById('file').click()">📁 Click To Upload Cover / Character Image
+<input type="file" id="file" accept="image/*" hidden>
+<img id="myImg" style="display:none">
+</div>
+<p class="small">Uploaded image will be shown and used as idea for poster</p>
+</div>
+
+<!-- 3. TYPE POSTER TYPE -->
+<div class="box">
+<label>3. What Type Poster You Want? Type Below 👇</label>
+<input id="prompt" placeholder="Type here... Eg: horror scary, magical fantasy, cute kids, romantic, funny cat...">
+<div class="styles">
+<button onclick="setStyle(this,'magical fantasy glowing beautiful book poster')">✨ Fantasy</button>
+<button onclick="setStyle(this,'horror scary dark ghost haunted book poster')">👻 Horror</button>
+<button onclick="setStyle(this,'cute kids colorful happy funny book poster')">🧒 Kids</button>
+<button onclick="setStyle(this,'romantic love beautiful couple book poster')">❤️ Love</button>
+</div>
+<label style="margin-top:12px">Poster Size</label>
+<select id="size"><option value="768x1024">Portrait - Book Cover (Best)</option><option value="1024x1024">Square - Instagram Post</option><option value="1024x768">Landscape</option></select>
+<label>Pollinations Model (Free)</label>
+<select id="model"><option value="flux">Flux - Best Quality FREE</option><option value="turbo">Turbo - Fast FREE</option></select>
+<button class="gen" onclick="makePoster()">✨ GENERATE POSTER - APP WILL MAKE</button>
+<div id="loading">⏳ Connecting to pollinations.ai...<br>App is making your poster... Wait 10-15 sec...</div>
+</div>
+
+<!-- 4. POSTER RESULT -->
+<div class="box" id="result">
+<label>4. Your Poster Made By App 👇</label>
+<div id="tagLine" style="margin-top:8px"></div>
+<img id="posterImg">
+<p id="desc" style="font-size:13px;margin-top:8px"></p>
+<a id="dl" download="my-book-poster.jpg"><button class="dl">⬇️ Download Poster</button></a>
+<button class="again" onclick="makePoster()">🔄 Make Another Poster - Same Story</button>
+<p class="small" style="text-align:center">Long press poster to save on mobile</p>
+</div>
+
+<div class="box">
+<label>Your All Posters History</label>
+<div id="history"></div>
+</div>
+
+</div>
+
+<script>
+let selected='magical fantasy glowing beautiful book poster';
+function setStyle(b,t){selected=t;document.getElementById('prompt').value=t;document.querySelectorAll('.styles button').forEach(x=>x.classList.remove('active'));b.classList.add('active');}
+document.getElementById('story').addEventListener('input',e=>{
+document.getElementById('count').innerText=e.target.value.length+' characters - pasted';
+if(!document.getElementById('title').value){
+let f=e.target.value.split('\n')[0].slice(0,35); if(f) document.getElementById('title').value=f;
+}
+});
+document.getElementById('file').addEventListener('change',e=>{
+let f=e.target.files[0]; if(!f) return; let r=new FileReader();
+r.onload=ev=>{let i=document.getElementById('myImg');i.src=ev.target.result;i.style.display='block';};
+r.readAsDataURL(f);
+});
+function makePoster(){
+let story=document.getElementById('story').value||'A magical adventure story about a brave hero';
+let title=document.getElementById('title').value||story.slice(0,30);
+let author=document.getElementById('author').value||'By You';
+let want=document.getElementById('prompt').value||selected;
+let size=document.getElementById('size').value.split('x');
+let model=document.getElementById('model').value;
+document.getElementById('loading').style.display='block';
+document.getElementById('result').style.display='none';
+let hasImg=document.getElementById('myImg').src?' and use uploaded image style':'';
+let fullPrompt=`Professional book cover poster, Title "${title}" big bold text, Author "${author}", Story: ${story.slice(0,300)}${hasImg}, Style: ${want}, masterpiece, high quality, cinematic, detailed book poster design`;
+let url=`https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=${size[0]}&height=${size[1]}&seed=${Math.floor(Math.random()*100000)}&model=${model}&enhance=true&nologo=true`;
+let img=document.getElementById('posterImg');
+img.onload=()=>{
+document.getElementById('loading').style.display='none';
+document.getElementById('result').style.display='block';
+document.getElementById('tagLine').innerHTML=`<span class="tag">${want}</span> <span style="background:#22c55e;color:#fff;padding:6px 10px;border-radius:20px;font-size:12px">Pollinations Free</span>`;
+document.getElementById('desc').innerText=title+' | '+story.slice(0,140)+'...';
+document.getElementById('dl').href=url;
+document.getElementById('history').innerHTML+=`<img src="${url}" onclick="document.getElementById('posterImg').src=this.src;document.getElementById('result').scrollIntoView({behavior:'smooth'})">`;
+document.getElementById('result').scrollIntoView({behavior:'smooth'});
+};
+img.onerror=()=>{alert('Pollinations slow, press Generate again');document.getElementById('loading').style.display='none';};
+img.src=url;
+}
+</script>
+</body>
+</html>
